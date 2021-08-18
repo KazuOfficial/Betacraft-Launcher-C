@@ -1,0 +1,1 @@
+wndclass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 4);
