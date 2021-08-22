@@ -1,6 +1,10 @@
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+#include <curl/curl.h>
 
 // Custom structure that holds pointers to widgets and user variables
 typedef struct {
@@ -8,6 +12,49 @@ typedef struct {
 } app_widgets;
 
 const gchar *nickname;
+static const char *pagefilename;
+
+static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+  size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
+  return written;
+}
+
+void init_directories()
+{
+    int check;
+    //check = mkdir
+}
+
+void download_file(char* fileURL, char* fileName)
+{
+  CURL *curl_handle;
+  pagefilename = fileName;
+  FILE *pagefile;
+ 
+  curl_global_init(CURL_GLOBAL_ALL);
+ 
+  curl_handle = curl_easy_init();
+ 
+  curl_easy_setopt(curl_handle, CURLOPT_URL, fileURL);
+  curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
+ 
+  pagefile = fopen(pagefilename, "wb");
+  if(pagefile) {
+ 
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
+ 
+    curl_easy_perform(curl_handle);
+
+    fclose(pagefile);
+  }
+ 
+  curl_easy_cleanup(curl_handle);
+ 
+  curl_global_cleanup();
+}
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +62,6 @@ int main(int argc, char *argv[])
     GtkWidget       *window;
     // Instantiate structure, allocating memory for it
     app_widgets     *widgets = g_slice_new(app_widgets);
-    
     gtk_init(&argc, &argv);
 
     webkit_web_view_get_type();
@@ -45,8 +91,12 @@ int main(int argc, char *argv[])
 
 void on_play_button_clicked(GtkButton *button)
 {
-    printf("%s\n", nickname);
-    //system("java -cp ");
+    if (nickname != NULL)
+    {
+        printf("%s\n", nickname);
+        download_file("https://files.betacraft.pl/launcher/assets/jsons/b1.7.3.info", "b1.7.3.info");
+        //system("java -cp ");
+    }
 }
 
 void on_nick_textbox_changed(GtkEntry *entry)

@@ -14,7 +14,7 @@ PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD) -pipe
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`
+GTKLIB=`-pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`
 
 # linker
 LD=gcc
