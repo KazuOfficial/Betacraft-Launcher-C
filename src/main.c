@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
-
+#include <curses.h>
 #include <curl/curl.h>
 
 // Custom structure that holds pointers to widgets and user variables
@@ -20,10 +20,39 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
-void init_directories()
+void make_directories(char* dirName)
 {
     int check;
-    //check = mkdir
+
+    check = mkdir(dirName, 0777);
+
+    // if (!check)
+    // {
+    //     printf("Directories created!");
+    // }
+    // else
+    // {
+    //     printf("Unable to create directories.");
+    // }
+
+    if (check)
+    {
+        return;
+    }
+
+    getch();
+    system("dir");
+    getch();
+}
+
+void betacraft_directories()
+{
+    make_directories("/home/kazu/betacraft-c");
+    make_directories("/home/kazu/betacraft-c/launcher");
+    make_directories("/home/kazu/betacraft-c/versions/");
+    make_directories("/home/kazu/betacraft-c/versions/jsons");
+    make_directories("/home/kazu/betacraft-c/bin");
+    make_directories("/home/kazu/betacraft-c/bin/natives");
 }
 
 void download_file(char* fileURL, char* fileName)
@@ -67,7 +96,7 @@ int main(int argc, char *argv[])
     webkit_web_view_get_type();
     webkit_settings_get_type();
 
-    builder = gtk_builder_new_from_file("glade/window_main.glade");
+    builder = gtk_builder_new_from_file("../glade/window_main.glade");
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window_main"));
     // Get pointers to widgets here
@@ -78,6 +107,8 @@ int main(int argc, char *argv[])
     gtk_builder_connect_signals(builder, widgets);
 
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(widgets->w_webkit_webview), "https://betacraft.pl/versions");
+
+    betacraft_directories();
 
     g_object_unref(builder);
 
