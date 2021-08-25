@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <curses.h>
 #include <curl/curl.h>
+#include <zip.h>
+#include <string.h>
 
 // Custom structure that holds pointers to widgets and user variables
 typedef struct {
@@ -45,6 +47,39 @@ void make_directories(char* dirName)
     getch();
 }
 
+void unzip_file(char* filePath, char* fileInArchive, char* path)
+{
+    int err = 0;
+    FILE *outFile;
+    zip_t *z = zip_open(filePath, 0, &err);
+
+    const char *name = fileInArchive;
+    struct zip_stat st;
+    zip_stat_init(&st);
+    zip_stat(z, name, 0, &st);
+
+    char *contents[st.size];
+
+    zip_file_t *f = zip_fopen(z, name, 0);
+    zip_fread(f, contents, st.size);
+    zip_fclose(f);
+
+    zip_close(z);
+
+    //Do something with the contents
+    char* str = malloc(strlen(path) + strlen(fileInArchive) + 1); 
+    strcpy(str, path);
+    strcat(str, fileInArchive);
+
+    outFile = fopen(str, "wb");
+    fwrite(contents, st.size, sizeof(st.size), outFile);
+    fclose(outFile);
+
+    printf("File unzipped: %s\n", fileInArchive);
+
+    memset(contents, 0, sizeof(contents));
+}
+
 void betacraft_directories()
 {
     make_directories("/home/kazu/betacraft-c");
@@ -71,18 +106,41 @@ void download_file(char* fileURL, char* fileName)
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
  
   pagefile = fopen(pagefilename, "wb");
-  if(pagefile) {
- 
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
- 
-    curl_easy_perform(curl_handle);
 
+  if(pagefile) {
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
+    curl_easy_perform(curl_handle);
     fclose(pagefile);
   }
  
   curl_easy_cleanup(curl_handle);
  
   curl_global_cleanup();
+}
+
+void betacraft_download()
+{
+    download_file("https://files.betacraft.pl/improvedjsons/bcwrapper-1.0.1-pre3.jar", "/home/kazu/betacraft-c/launcher/bcwrapper-1.0.1-pre3.jar");
+    download_file("https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar", "/home/kazu/betacraft-c/versions/b1.7.3.jar");
+    download_file("https://files.betacraft.pl/launcher/assets/libs-linux.zip", "/home/kazu/betacraft-c/bin/libs-linux.zip");
+    download_file("https://files.betacraft.pl/launcher/assets/natives-linux.zip", "/home/kazu/betacraft-c/bin/natives/natives-linux.zip");
+}
+
+void betacraft_unzip()
+{
+    char* libsPath = "/home/kazu/betacraft-c/bin/";
+    char* nativesPath = "/home/kazu/betacraft-c/bin/natives/";
+
+    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "jinput.jar", libsPath);
+    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "lwjgl.jar", libsPath);
+    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "lwjgl_util.jar", libsPath);
+
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libjinput-linux.so", nativesPath);
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libjinput-linux64.so", nativesPath);
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "liblwjgl.so", nativesPath);
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "liblwjgl64.so", nativesPath);
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libopenal.so", nativesPath);
+    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libopenal64.so", nativesPath);
 }
 
 int main(int argc, char *argv[])
@@ -125,7 +183,8 @@ void on_play_button_clicked(GtkButton *button)
     if (nickname != NULL)
     {
         printf("%s\n", nickname);
-        download_file("https://files.betacraft.pl/launcher/assets/jsons/b1.7.3.info", "b1.7.3.info");
+        betacraft_download();
+        betacraft_unzip();
         //system("java -cp ");
     }
 }
