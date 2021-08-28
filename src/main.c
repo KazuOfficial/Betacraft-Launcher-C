@@ -13,6 +13,49 @@ typedef struct {
     GtkWidget *w_webkit_webview;
 } app_widgets;
 
+char *betacraft_directories_array[] = 
+{
+    "/home/kazu/betacraft-c",
+    "/home/kazu/betacraft-c/launcher",
+    "/home/kazu/betacraft-c/versions/",
+    "/home/kazu/betacraft-c/versions/jsons",
+    "/home/kazu/betacraft-c/bin",
+    "/home/kazu/betacraft-c/bin/natives"
+};
+
+char *betacraft_unzip_array_libs[] = 
+{
+    "jinput.jar",
+    "lwjgl.jar",
+    "lwjgl_util.jar"
+};
+
+char *betacraft_unzip_array_natives[] = 
+{
+    "libjinput-linux.so",
+    "libjinput-linux64.so",
+    "liblwjgl.so",
+    "liblwjgl64.so",
+    "libopenal.so",
+    "libopenal64.so"
+};
+
+char *betacraft_download_array[] = 
+{
+    "https://files.betacraft.pl/improvedjsons/bcwrapper-1.0.1-pre3.jar",
+    "https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar",
+    "https://files.betacraft.pl/launcher/assets/libs-linux.zip",
+    "https://files.betacraft.pl/launcher/assets/natives-linux.zip"
+};
+
+char *betacraft_download_array_destination[] = 
+{
+    "/home/kazu/betacraft-c/launcher/betacraft_wrapper.jar",
+    "/home/kazu/betacraft-c/versions/b1.7.3.jar",
+    "/home/kazu/betacraft-c/bin/libs-linux.zip",
+    "/home/kazu/betacraft-c/bin/natives/natives-linux.zip"
+};
+
 const gchar *nickname;
 static const char *pagefilename;
 
@@ -22,7 +65,7 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
-void make_directories(char* dirName)
+void create_directories(char* dirName)
 {
     int check;
 
@@ -66,7 +109,6 @@ void unzip_file(char* filePath, char* fileInArchive, char* path)
 
     zip_close(z);
 
-    //Do something with the contents
     char* str = malloc(strlen(path) + strlen(fileInArchive) + 1); 
     strcpy(str, path);
     strcat(str, fileInArchive);
@@ -78,16 +120,6 @@ void unzip_file(char* filePath, char* fileInArchive, char* path)
     printf("File unzipped: %s\n", fileInArchive);
 
     memset(contents, 0, sizeof(contents));
-}
-
-void betacraft_directories()
-{
-    make_directories("/home/kazu/betacraft-c");
-    make_directories("/home/kazu/betacraft-c/launcher");
-    make_directories("/home/kazu/betacraft-c/versions/");
-    make_directories("/home/kazu/betacraft-c/versions/jsons");
-    make_directories("/home/kazu/betacraft-c/bin");
-    make_directories("/home/kazu/betacraft-c/bin/natives");
 }
 
 void download_file(char* fileURL, char* fileName)
@@ -118,31 +150,6 @@ void download_file(char* fileURL, char* fileName)
   curl_global_cleanup();
 }
 
-void betacraft_download()
-{
-    download_file("https://files.betacraft.pl/improvedjsons/bcwrapper-1.0.1-pre3.jar", "/home/kazu/betacraft-c/launcher/bcwrapper-1.0.1-pre3.jar");
-    download_file("https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar", "/home/kazu/betacraft-c/versions/b1.7.3.jar");
-    download_file("https://files.betacraft.pl/launcher/assets/libs-linux.zip", "/home/kazu/betacraft-c/bin/libs-linux.zip");
-    download_file("https://files.betacraft.pl/launcher/assets/natives-linux.zip", "/home/kazu/betacraft-c/bin/natives/natives-linux.zip");
-}
-
-void betacraft_unzip()
-{
-    char* libsPath = "/home/kazu/betacraft-c/bin/";
-    char* nativesPath = "/home/kazu/betacraft-c/bin/natives/";
-
-    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "jinput.jar", libsPath);
-    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "lwjgl.jar", libsPath);
-    unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", "lwjgl_util.jar", libsPath);
-
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libjinput-linux.so", nativesPath);
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libjinput-linux64.so", nativesPath);
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "liblwjgl.so", nativesPath);
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "liblwjgl64.so", nativesPath);
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libopenal.so", nativesPath);
-    unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "libopenal64.so", nativesPath);
-}
-
 int main(int argc, char *argv[])
 {
     GtkBuilder      *builder; 
@@ -166,7 +173,11 @@ int main(int argc, char *argv[])
 
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(widgets->w_webkit_webview), "https://betacraft.pl/versions");
 
-    betacraft_directories();
+    // Create directories for the launcher
+    for (int i = 0; i<sizeof(betacraft_directories_array) / sizeof(betacraft_directories_array[0]); i++)
+    {
+        create_directories(betacraft_directories_array[i]);
+    }
 
     g_object_unref(builder);
 
@@ -183,9 +194,27 @@ void on_play_button_clicked(GtkButton *button)
     if (nickname != NULL)
     {
         printf("%s\n", nickname);
-        betacraft_download();
-        betacraft_unzip();
-        //system("java -cp ");
+
+        // Download required files
+        for (int i = 0; i<sizeof(betacraft_download_array) / sizeof(betacraft_download_array[0]); i++)
+        {
+            download_file(betacraft_download_array[i], betacraft_download_array_destination[i]);
+        }
+
+        // Unzip libs
+        for (int i = 0; i<sizeof(betacraft_unzip_array_libs) / sizeof(betacraft_unzip_array_libs[0]); i++)
+        {
+            unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", betacraft_unzip_array_libs[i], "/home/kazu/betacraft-c/bin/");
+        }
+
+        // Unzip natives
+        for (int i = 0; i<sizeof(betacraft_unzip_array_natives) / sizeof(betacraft_unzip_array_natives[0]); i++)
+        {
+            unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", betacraft_unzip_array_natives[i], "/home/kazu/betacraft-c/bin/natives/");
+        }
+
+        // Launch the game
+        system("java -cp /home/kazu/betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/betacraft-c/versions/b1.7.3.jar:/home/kazu/betacraft-c/bin/lwjgl.jar:/home/kazu/betacraft-c/bin/lwjgl_util.jar:/home/kazu/betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=Kazu___ sessionid= gameDir=/home/kazu/betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/betacraft-c/bin/natives/");
     }
 }
 
