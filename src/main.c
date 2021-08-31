@@ -193,8 +193,8 @@ void on_play_button_clicked(GtkButton *button)
 {
     if (nickname != NULL)
     {
-        printf("%s\n", nickname);
-
+        char* str;
+        
         // Download required files
         for (int i = 0; i<sizeof(betacraft_download_array) / sizeof(betacraft_download_array[0]); i++)
         {
@@ -214,7 +214,11 @@ void on_play_button_clicked(GtkButton *button)
         }
 
         // Launch the game
-        system("java -cp /home/kazu/betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/betacraft-c/versions/b1.7.3.jar:/home/kazu/betacraft-c/bin/lwjgl.jar:/home/kazu/betacraft-c/bin/lwjgl_util.jar:/home/kazu/betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=Kazu___ sessionid= gameDir=/home/kazu/betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/betacraft-c/bin/natives/");
+        strcpy(str, "java -cp /home/kazu/betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/betacraft-c/versions/b1.7.3.jar:/home/kazu/betacraft-c/bin/lwjgl.jar:/home/kazu/betacraft-c/bin/lwjgl_util.jar:/home/kazu/betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=");
+        strcat(str, nickname);
+        strcat(str, " sessionid= gameDir=/home/kazu/betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/betacraft-c/bin/natives/");
+
+        system(str);
     }
 }
 
