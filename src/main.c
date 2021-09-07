@@ -7,8 +7,6 @@
 #include <curl/curl.h>
 #include "zip.h"
 #include <string.h>
-//#include "miniz.h"
-//#include "zip.h"
 
 // Custom structure that holds pointers to widgets and user variables
 typedef struct {
@@ -17,12 +15,12 @@ typedef struct {
 
 char *betacraft_directories_array[] = 
 {
-    "/home/kazu/betacraft-c",
-    "/home/kazu/betacraft-c/launcher",
-    "/home/kazu/betacraft-c/versions/",
-    "/home/kazu/betacraft-c/versions/jsons",
-    "/home/kazu/betacraft-c/bin",
-    "/home/kazu/betacraft-c/bin/natives"
+    "/home/kazu/.betacraft-c",
+    "/home/kazu/.betacraft-c/launcher",
+    "/home/kazu/.betacraft-c/versions/",
+    "/home/kazu/.betacraft-c/versions/jsons",
+    "/home/kazu/.betacraft-c/bin",
+    "/home/kazu/.betacraft-c/bin/natives"
 };
 
 char *betacraft_download_array[] = 
@@ -35,10 +33,10 @@ char *betacraft_download_array[] =
 
 char *betacraft_download_array_destination[] = 
 {
-    "/home/kazu/betacraft-c/launcher/betacraft_wrapper.jar",
-    "/home/kazu/betacraft-c/versions/b1.7.3.jar",
-    "/home/kazu/betacraft-c/bin/libs-linux.zip",
-    "/home/kazu/betacraft-c/bin/natives/natives-linux.zip"
+    "/home/kazu/.betacraft-c/launcher/betacraft_wrapper.jar",
+    "/home/kazu/.betacraft-c/versions/b1.7.3.jar",
+    "/home/kazu/.betacraft-c/bin/libs-linux.zip",
+    "/home/kazu/.betacraft-c/bin/natives/natives-linux.zip"
 };
 
 const gchar *nickname;
@@ -56,18 +54,14 @@ void create_directories(char* dirName)
 
     check = mkdir(dirName, 0777);
 
-    // if (!check)
-    // {
-    //     printf("Directories created!");
-    // }
-    // else
-    // {
-    //     printf("Unable to create directories.");
-    // }
-
     if (check)
     {
+        printf("%s%s%s\n", "Unable to create a directory: ", dirName, " (it probably already exists)");
         return;
+    }
+    else
+    {
+        printf("%s%s\n", "Directory created: ", dirName);
     }
 
     getch();
@@ -151,27 +145,40 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+bool file_exists (char *filename) {
+  struct stat   buffer;   
+  return (stat (filename, &buffer) == 0);
+}
+
+void launch_minecraft()
+{
+    char str[300];
+
+    strcpy(str, "java -cp /home/kazu/.betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/.betacraft-c/versions/b1.7.3.jar:/home/kazu/.betacraft-c/bin/lwjgl.jar:/home/kazu/.betacraft-c/bin/lwjgl_util.jar:/home/kazu/.betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=");
+    strcat(str, nickname);
+    strcat(str, " sessionid= gameDir=/home/kazu/.betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/.betacraft-c/bin/natives/");
+
+    system(str);
+}
+
 void on_play_button_clicked(GtkButton *button)
 {
     int arg = 2;
-    char* str;
     if (nickname != NULL)
     {
-        // Download required files
-        for (int i = 0; i<sizeof(betacraft_download_array) / sizeof(betacraft_download_array[0]); i++)
+        if (!file_exists("/home/kazu/.betacraft-c/bin/lwjgl.jar"))
         {
-            download_file(betacraft_download_array[i], betacraft_download_array_destination[i]);
+            // Download required files
+            for (int i = 0; i<sizeof(betacraft_download_array) / sizeof(betacraft_download_array[0]); i++)
+            {
+                download_file(betacraft_download_array[i], betacraft_download_array_destination[i]);
+            }
+
+            zip_extract("/home/kazu/.betacraft-c/bin/libs-linux.zip", "/home/kazu/.betacraft-c/bin", on_extract_entry, &arg);
+            zip_extract("/home/kazu/.betacraft-c/bin/natives/natives-linux.zip", "/home/kazu/.betacraft-c/bin/natives", on_extract_entry, &arg);
         }
 
-        zip_extract("/home/kazu/betacraft-c/bin/libs-linux.zip", "/home/kazu/betacraft-c/bin", on_extract_entry, &arg);
-        zip_extract("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "/home/kazu/betacraft-c/bin/natives", on_extract_entry, &arg);
-
-        // Launch the game
-        strcpy(str, "java -cp /home/kazu/betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/betacraft-c/versions/b1.7.3.jar:/home/kazu/betacraft-c/bin/lwjgl.jar:/home/kazu/betacraft-c/bin/lwjgl_util.jar:/home/kazu/betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=");
-        strcat(str, nickname);
-        strcat(str, " sessionid= gameDir=/home/kazu/betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/betacraft-c/bin/natives/");
-
-        system(str);
+        launch_minecraft();
     }
 }
 
