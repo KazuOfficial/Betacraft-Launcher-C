@@ -1,1 +1,0 @@
-gcc -o Betacraft-Launcher-C main.c -pthread `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0` -export-dynamic -lcurl -lcurses -lzip

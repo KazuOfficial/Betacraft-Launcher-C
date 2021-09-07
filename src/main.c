@@ -5,8 +5,10 @@
 #include <sys/stat.h>
 #include <curses.h>
 #include <curl/curl.h>
-#include <zip.h>
+#include "zip.h"
 #include <string.h>
+//#include "miniz.h"
+//#include "zip.h"
 
 // Custom structure that holds pointers to widgets and user variables
 typedef struct {
@@ -21,23 +23,6 @@ char *betacraft_directories_array[] =
     "/home/kazu/betacraft-c/versions/jsons",
     "/home/kazu/betacraft-c/bin",
     "/home/kazu/betacraft-c/bin/natives"
-};
-
-char *betacraft_unzip_array_libs[] = 
-{
-    "jinput.jar",
-    "lwjgl.jar",
-    "lwjgl_util.jar"
-};
-
-char *betacraft_unzip_array_natives[] = 
-{
-    "libjinput-linux.so",
-    "libjinput-linux64.so",
-    "liblwjgl.so",
-    "liblwjgl64.so",
-    "libopenal.so",
-    "libopenal64.so"
 };
 
 char *betacraft_download_array[] = 
@@ -90,37 +75,14 @@ void create_directories(char* dirName)
     getch();
 }
 
-void unzip_file(char* filePath, char* fileInArchive, char* path)
-{
-    int err = 0;
-    FILE *outFile;
-    zip_t *z = zip_open(filePath, 0, &err);
+int on_extract_entry(const char *filename, void *arg) {
+    static int i = 0;
+    int n = *(int *)arg;
+    printf("Extracted: %s (%d of %d)\n", filename, ++i, n);
 
-    const char *name = fileInArchive;
-    struct zip_stat st;
-    zip_stat_init(&st);
-    zip_stat(z, name, 0, &st);
-
-    char *contents[st.size];
-
-    zip_file_t *f = zip_fopen(z, name, 0);
-    zip_fread(f, contents, st.size);
-    zip_fclose(f);
-
-    zip_close(z);
-
-    char* str = malloc(strlen(path) + strlen(fileInArchive) + 1); 
-    strcpy(str, path);
-    strcat(str, fileInArchive);
-
-    outFile = fopen(str, "wb");
-    fwrite(contents, st.size, sizeof(st.size), outFile);
-    fclose(outFile);
-
-    printf("File unzipped: %s\n", fileInArchive);
-
-    memset(contents, 0, sizeof(contents));
+    return 0;
 }
+
 
 void download_file(char* fileURL, char* fileName)
 {
@@ -191,27 +153,18 @@ int main(int argc, char *argv[])
 
 void on_play_button_clicked(GtkButton *button)
 {
+    int arg = 2;
+    char* str;
     if (nickname != NULL)
     {
-        char* str;
-        
         // Download required files
         for (int i = 0; i<sizeof(betacraft_download_array) / sizeof(betacraft_download_array[0]); i++)
         {
             download_file(betacraft_download_array[i], betacraft_download_array_destination[i]);
         }
 
-        // Unzip libs
-        for (int i = 0; i<sizeof(betacraft_unzip_array_libs) / sizeof(betacraft_unzip_array_libs[0]); i++)
-        {
-            unzip_file("/home/kazu/betacraft-c/bin/libs-linux.zip", betacraft_unzip_array_libs[i], "/home/kazu/betacraft-c/bin/");
-        }
-
-        // Unzip natives
-        for (int i = 0; i<sizeof(betacraft_unzip_array_natives) / sizeof(betacraft_unzip_array_natives[0]); i++)
-        {
-            unzip_file("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", betacraft_unzip_array_natives[i], "/home/kazu/betacraft-c/bin/natives/");
-        }
+        zip_extract("/home/kazu/betacraft-c/bin/libs-linux.zip", "/home/kazu/betacraft-c/bin", on_extract_entry, &arg);
+        zip_extract("/home/kazu/betacraft-c/bin/natives/natives-linux.zip", "/home/kazu/betacraft-c/bin/natives", on_extract_entry, &arg);
 
         // Launch the game
         strcpy(str, "java -cp /home/kazu/betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/betacraft-c/versions/b1.7.3.jar:/home/kazu/betacraft-c/bin/lwjgl.jar:/home/kazu/betacraft-c/bin/lwjgl_util.jar:/home/kazu/betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=");
