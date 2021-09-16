@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "curses.h": "c",
-        "curl.h": "c"
+        "curl.h": "c",
+        "pwd.h": "c"
     }
 }

@@ -92,7 +92,7 @@ void download_file(char* fileURL, char* fileName)
   curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
- 
+
   pagefile = fopen(pagefilename, "wb");
 
   if(pagefile) {
@@ -152,13 +152,16 @@ bool file_exists (char *filename) {
 
 void launch_minecraft()
 {
-    char str[300];
+    char arguments[425];
 
-    strcpy(str, "java -cp /home/kazu/.betacraft-c/launcher/betacraft_wrapper.jar:/home/kazu/.betacraft-c/versions/b1.7.3.jar:/home/kazu/.betacraft-c/bin/lwjgl.jar:/home/kazu/.betacraft-c/bin/lwjgl_util.jar:/home/kazu/.betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=");
-    strcat(str, nickname);
-    strcat(str, " sessionid= gameDir=/home/kazu/.betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=/home/kazu/.betacraft-c/bin/natives/");
+    char *p=getenv("HOME");
 
-    system(str);
+    if(p==NULL) {
+        printf("%s\n", "Couldn't find a name of the user.");
+    }
+
+    snprintf(arguments, sizeof(arguments), "java -cp %s/.betacraft-c/launcher/betacraft_wrapper.jar:%s/.betacraft-c/versions/b1.7.3.jar:%s/.betacraft-c/bin/lwjgl.jar:%s/.betacraft-c/bin/lwjgl_util.jar:%s/.betacraft-c/bin/jinput.jar pl.moresteck.BCWrapper username=%s sessionid= gameDir=%s/.betacraft-c/ versionName=b1.7.3 frameName=Minecraft width=854 height=480 assetsDir= nativesDir=%s/.betacraft-c/bin/natives/", p, p, p, p, p, nickname, p, p);
+    system(arguments);
 }
 
 void on_play_button_clicked(GtkButton *button)

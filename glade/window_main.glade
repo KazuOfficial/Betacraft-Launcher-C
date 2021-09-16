@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <requires lib="webkit2gtk" version="2.12"/>
   <object class="GtkWindow" id="window_main">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Betacraft Launcher C</property>
-    <property name="default_width">800</property>
-    <property name="default_height">450</property>
+    <property name="default-width">800</property>
+    <property name="default-height">450</property>
+    <property name="icon">./bc.png</property>
     <signal name="destroy" handler="on_window_main_destroy" swapped="no"/>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="WebKitWebView" id="webkit_webview">
@@ -38,10 +35,10 @@
         <child>
           <object class="GtkEntry" id="nick_textbox">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="margin_left">300</property>
-            <property name="margin_right">300</property>
-            <property name="margin_bottom">10</property>
+            <property name="can-focus">True</property>
+            <property name="margin-left">300</property>
+            <property name="margin-right">300</property>
+            <property name="margin-bottom">10</property>
             <signal name="changed" handler="on_nick_textbox_changed" swapped="no"/>
           </object>
           <packing>
@@ -54,11 +51,11 @@
           <object class="GtkButton" id="play_button">
             <property name="label" translatable="yes">PLAY</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="margin_left">300</property>
-            <property name="margin_right">300</property>
-            <property name="margin_bottom">10</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="margin-left">300</property>
+            <property name="margin-right">300</property>
+            <property name="margin-bottom">10</property>
             <signal name="clicked" handler="on_play_button_clicked" swapped="no"/>
           </object>
           <packing>
@@ -70,10 +67,10 @@
         <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="halign">start</property>
-            <property name="margin_left">12</property>
-            <property name="margin_bottom">10</property>
+            <property name="margin-left">12</property>
+            <property name="margin-bottom">10</property>
             <property name="label" translatable="yes">Made by Kazu© | https://github.com/KazuOfficial</property>
             <attributes>
               <attribute name="size" value="9000"/>
