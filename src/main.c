@@ -152,7 +152,7 @@ bool file_exists (char *filename) {
 
 void launch_minecraft()
 {
-    char arguments[425];
+    char arguments[440];
 
     char *p=getenv("HOME");
 
@@ -164,10 +164,15 @@ void launch_minecraft()
     system(arguments);
 }
 
+void on_options_button_clicked(GtkButton *button)
+{
+    printf("%s", "Clicked the options button");
+}
+
 void on_play_button_clicked(GtkButton *button)
 {
     int arg = 2;
-    if (nickname != NULL)
+    if (nickname != NULL && strlen(nickname) <= 16 && strlen(nickname) >= 3)
     {
         if (!file_exists("/home/kazu/.betacraft-c/bin/lwjgl.jar"))
         {
@@ -182,6 +187,10 @@ void on_play_button_clicked(GtkButton *button)
         }
 
         launch_minecraft();
+    }
+    else
+    {
+        printf("%s", "Invalid username");
     }
 }
 
